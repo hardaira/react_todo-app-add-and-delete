@@ -31,10 +31,16 @@ export const App: React.FC = React.memo(() => {
     if (!query.trim()) {
       setErrorMessage('Title should not be empty');
       setIsSubmitting(false); // Reset the submitting state when query is invalid
+
       return;
     }
 
-    const tempTodo: Todo = { id: 0, userId: USER_ID, title: query, completed: false };
+    const tempTodo: Todo = {
+      id: 0,
+      userId: USER_ID,
+      title: query,
+      completed: false,
+    };
 
     // Start API request and manage submission state
     return createTodo(tempTodo)
@@ -44,7 +50,7 @@ export const App: React.FC = React.memo(() => {
         setErrorMessage(''); // Clear error message if successful
       })
       .catch(error => {
-        setErrorMessage('Failed to add todo');
+        setErrorMessage('Unable to add todo');
         setIsSubmitting(false); // Reset submission state on error
         throw error; // Propagate the error
       })
@@ -52,7 +58,6 @@ export const App: React.FC = React.memo(() => {
         setIsSubmitting(false); // Reset submission state after the request is finished
       });
   }
-
 
   const handleStatusChange = (value: 'all' | 'active' | 'completed') => {
     setStatus(value);
@@ -72,20 +77,28 @@ export const App: React.FC = React.memo(() => {
   });
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      getTodos()
-        .then(data => setTodos(data))
-        .finally(() => setLoading(false));
-    }, 2000);
-  }, []);
+  setLoading(true);
+  setTimeout(() => {
+    getTodos()
+      .then(data => setTodos(data))
+      .catch(error => {
+        setErrorMessage('Unable to load todos');
+        throw error;
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, 2000);
+}, []);
+
 
   function deleteThisTodo(todoId: number) {
     setTodos(currentTodos => currentTodos.filter(todo => todo.id !== todoId));
+
     return deleteTodo(todoId)
       .catch(error => {
         setTodos(todos);
-        setErrorMessage('Failed to delete todo');
+        setErrorMessage('Unable to delete todo');
         throw error;
       })
       .finally(() => {
