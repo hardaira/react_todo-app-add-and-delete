@@ -31,7 +31,9 @@ export const App: React.FC = React.memo(() => {
     if (!query.trim()) {
       setErrorMessage('Title should not be empty');
       setIsSubmitting(false); // Reset the submitting state when query is invalid
-
+      setTimeout(() => {
+        setErrorMessage(''); // Reset error message after 3 seconds
+      }, 3000);
       return;
     }
 
@@ -52,6 +54,9 @@ export const App: React.FC = React.memo(() => {
       .catch(error => {
         setErrorMessage('Unable to add todo');
         setIsSubmitting(false); // Reset submission state on error
+        setTimeout(() => {
+          setErrorMessage(''); // Reset error message after 3 seconds
+        }, 3000);
         throw error; // Propagate the error
       })
       .finally(() => {
@@ -77,20 +82,22 @@ export const App: React.FC = React.memo(() => {
   });
 
   useEffect(() => {
-  setLoading(true);
-  setTimeout(() => {
-    getTodos()
-      .then(data => setTodos(data))
-      .catch(error => {
-        setErrorMessage('Unable to load todos');
-        throw error;
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, 2000);
-}, []);
-
+    setLoading(true);
+    setTimeout(() => {
+      getTodos()
+        .then(data => setTodos(data))
+        .catch(error => {
+          setErrorMessage('Unable to load todos');
+          setTimeout(() => {
+            setErrorMessage('');
+          }, 3000);
+          throw error;
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }, 2000);
+  }, []);
 
   function deleteThisTodo(todoId: number) {
     setTodos(currentTodos => currentTodos.filter(todo => todo.id !== todoId));
@@ -99,6 +106,9 @@ export const App: React.FC = React.memo(() => {
       .catch(error => {
         setTodos(todos);
         setErrorMessage('Unable to delete todo');
+        setTimeout(() => {
+          setErrorMessage(''); // Reset error message after 3 seconds
+        }, 3000);
         throw error;
       })
       .finally(() => {

@@ -14,17 +14,6 @@ type Props = {
 export const TodoList = ({
   todos,
   deleteThisTodo,
-
-  //selectedTodoId,
-  //onSelect,
-
-  //query,
-  //onQueryChange = () => {},
-  //setQuery = () => {},
-  //handleStatusChange = () => {},
-  //selectedTodoId,
-  //onDelete = () => {},
-  //onSelect = () => {},
 }: Props) => (
   <div>
     {todos.map(todo => (
