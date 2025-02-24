@@ -26,7 +26,6 @@ export const App: React.FC = React.memo(() => {
 
   function addTodo(event: React.FormEvent) {
     event.preventDefault();
-
     // Check if the query is empty
     if (!query.trim()) {
       setErrorMessage('Title should not be empty');
@@ -34,6 +33,7 @@ export const App: React.FC = React.memo(() => {
       setTimeout(() => {
         setErrorMessage(''); // Reset error message after 3 seconds
       }, 3000);
+
       return;
     }
 
@@ -60,7 +60,8 @@ export const App: React.FC = React.memo(() => {
         throw error; // Propagate the error
       })
       .finally(() => {
-        setIsSubmitting(false); // Reset submission state after the request is finished
+        setIsSubmitting(false);
+        // Reset submission state after the request is finished
       });
   }
 

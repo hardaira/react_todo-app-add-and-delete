@@ -11,10 +11,7 @@ type Props = {
   setIsChecked: boolean;
 };
 
-export const TodoList = ({
-  todos,
-  deleteThisTodo,
-}: Props) => (
+export const TodoList = ({ todos, deleteThisTodo }: Props) => (
   <div>
     {todos.map(todo => (
       <div
