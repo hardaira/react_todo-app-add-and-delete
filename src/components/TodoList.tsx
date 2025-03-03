@@ -6,12 +6,16 @@ type Props = {
   todos: Todo[];
   selectedTodoId?: number;
   deleteThisTodo: (todoId: number) => void;
-  //onDelete: (todoId: number) => void;
   onSelect?: (todo: Todo) => void;
-  setIsChecked: boolean;
+  isChecked: boolean;
+  handleCheckedChange: (todoId: number) => void;
 };
 
-export const TodoList = ({ todos, deleteThisTodo }: Props) => (
+export const TodoList = ({
+  todos,
+  deleteThisTodo,
+  handleCheckedChange,
+}: Props) => (
   <div>
     {todos.map(todo => (
       <div
@@ -25,7 +29,8 @@ export const TodoList = ({ todos, deleteThisTodo }: Props) => (
             data-cy="TodoStatus"
             type="checkbox"
             className="todo__status"
-            checked={todo.completed}
+            checked={todo.completed} // Make each checkbox reflect the completed state of the todo
+            onChange={() => handleCheckedChange(todo.id)}
           />
         </label>
 

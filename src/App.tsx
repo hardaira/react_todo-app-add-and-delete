@@ -3,7 +3,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { UserWarning } from './UserWarning';
-import { getTodos, deleteTodo, createTodo, USER_ID } from './api/todos';
+import {
+  getTodos,
+  deleteTodo,
+  createTodo,
+  updateTodo,
+  USER_ID,
+} from './api/todos';
 import { TodoFilter } from './components/TodoFilter';
 import { Todo } from './types/Todo';
 import { TodoList } from './components/TodoList';
@@ -14,14 +20,66 @@ export const App: React.FC = React.memo(() => {
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<'all' | 'active' | 'completed'>('all');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  //const [appliedQuery, setAppliedQuery] = useState('');
+  const [isChecked, setIsChecked] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  //const [tickPressed, setTickPressed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tickPressed, setTickPressed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
+
+    setIsChecked(false);
+  };
+
+  const handleTickPressed = () => {
+    const allCompleted = !tickPressed; // If tickPressed is true, we want to set all to incomplete, otherwise set all to completed
+
+    const updatedTodos = todos.map(todo => ({
+      ...todo,
+      completed: allCompleted, // Set all todos to completed or incomplete based on tickPressed
+    }));
+
+    // Update local state
+    setTodos(updatedTodos);
+    setTickPressed(allCompleted); // Toggle the tickPressed state to reflect the current status (completed or incomplete)
+
+    // Update all todos on the server
+    updatedTodos.forEach(updatedTodo => {
+      updateTodo(updatedTodo).catch(error => {
+        setErrorMessage('Unable to update todos');
+        setTimeout(() => {
+          setErrorMessage('');
+        }, 3000);
+        throw error; // Propagate error for debugging
+      });
+    });
+  };
+
+  const handleCheckedChange = (todoId: number) => {
+    // Find the todo item by its ID
+    const todo = todos.find(t => t.id === todoId);
+
+    if (!todo) {
+      return;
+    }
+
+    // Toggle the completed state locally first
+    const updatedTodo = { ...todo, completed: !todo.completed };
+
+    // Update the local state
+    setTodos(currentTodos =>
+      currentTodos.map(t => (t.id === todoId ? updatedTodo : t)),
+    );
+
+    // Update the todo on the server
+    updateTodo(updatedTodo).catch(error => {
+      setErrorMessage('Unable to update todo');
+      setTimeout(() => {
+        setErrorMessage(''); // Reset error message after 3 seconds
+      }, 3000);
+      throw error; // Propagate error for debugging
+    });
   };
 
   function addTodo(event: React.FormEvent) {
@@ -75,9 +133,9 @@ export const App: React.FC = React.memo(() => {
       return !todo.completed;
     }
 
-    if (status === 'completed') {
-      return todo.completed;
-    }
+    //if (status === 'completed') {
+    // return todo.completed;
+    //}
 
     return true; // For 'all' status, return all todos
   });
@@ -130,29 +188,18 @@ export const App: React.FC = React.memo(() => {
             type="button"
             className="todoapp__toggle-all active"
             data-cy="ToggleAllButton"
-            onClick={() => {
-              const allCompleted = todos.every(todo => todo.completed); // Check if all todos are already completed
-
-              setTodos(currentTodos =>
-                currentTodos.map(todo => ({
-                  ...todo,
-                  completed: !allCompleted, // If all are completed, set them to not completed; otherwise, set them to completed
-                })),
-              );
-            }}
+            onClick={handleTickPressed}
           />
           <form onSubmit={addTodo}>
             <input
               data-cy="NewTodoField"
               type="text"
-              className={classNames('todoapp__new-todo', {
-                'is-loading': isSubmitting,
-              })}
+              className="todoapp__new-todo"
               placeholder="What needs to be done?"
               value={query}
               onChange={handleQueryChange}
-              autoFocus
               ref={inputRef}
+              autoFocus
             />
           </form>
         </header>
@@ -166,6 +213,9 @@ export const App: React.FC = React.memo(() => {
                 selectedTodo={null}
                 deleteThisTodo={deleteThisTodo}
                 addTodo={addTodo}
+                isChecked={isChecked}
+                isSubmitting={isSubmitting}
+                handleCheckedChange={handleCheckedChange}
               />
             )}
           </div>
