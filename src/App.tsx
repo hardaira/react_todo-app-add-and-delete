@@ -102,6 +102,7 @@ export const App: React.FC = React.memo(() => {
       completed: false,
     };
 
+    setIsSubmitting(true);
     // Start API request and manage submission state
     return createTodo(tempTodo)
       .then(TodoItem => {
@@ -111,7 +112,6 @@ export const App: React.FC = React.memo(() => {
       })
       .catch(error => {
         setErrorMessage('Unable to add todo');
-        setIsSubmitting(false); // Reset submission state on error
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
         }, 3000);
@@ -201,6 +201,7 @@ export const App: React.FC = React.memo(() => {
               placeholder="What needs to be done?"
               value={query}
               onChange={handleQueryChange}
+              disabled={isSubmitting}
               ref={inputRef}
               autoFocus
             />
