@@ -6,6 +6,9 @@ type Props = {
   status: 'all' | 'active' | 'completed';
   todos: Todo[];
   deleteThisTodo: (todoId: number) => void;
+  handleCheckedChange: (todoId: number) => void;
+  isChecked: boolean;
+  notCompletedTodosLength: number;
 };
 
 export const TodoFilter: React.FC<Props> = ({
@@ -13,6 +16,7 @@ export const TodoFilter: React.FC<Props> = ({
   handleStatusChange,
   status,
   deleteThisTodo,
+  notCompletedTodosLength,
 }) => {
   const handleClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -31,7 +35,7 @@ export const TodoFilter: React.FC<Props> = ({
   return (
     <footer className="todoapp__footer" data-cy="Footer">
       <span className="todo-count" data-cy="TodosCounter">
-        {todos.filter(todo => !todo.completed).length} items left
+        {notCompletedTodosLength} items left
       </span>
 
       <nav className="filter" data-cy="Filter">

@@ -133,9 +133,9 @@ export const App: React.FC = React.memo(() => {
       return !todo.completed;
     }
 
-    //if (status === 'completed') {
-    // return todo.completed;
-    //}
+    if (status === 'completed') {
+      return todo.completed;
+    }
 
     return true; // For 'all' status, return all todos
   });
@@ -157,6 +157,9 @@ export const App: React.FC = React.memo(() => {
         });
     }, 2000);
   }, []);
+
+  const notCompletedTodos = todos.filter(todo => !todo.completed);
+  const notCompletedTodosLength: number = notCompletedTodos.length;
 
   function deleteThisTodo(todoId: number) {
     setTodos(currentTodos => currentTodos.filter(todo => todo.id !== todoId));
@@ -227,6 +230,7 @@ export const App: React.FC = React.memo(() => {
               handleStatusChange={handleStatusChange}
               status={status}
               deleteThisTodo={deleteThisTodo}
+              notCompletedTodosLength={notCompletedTodosLength}
             />
           </div>
         )}
