@@ -24,6 +24,9 @@ export const App: React.FC = React.memo(() => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tickPressed, setTickPressed] = useState(false);
+  const [notCompletedTodosLength, setNotCompletedTodosLength] =
+    useState<number>(0);
+  //const [notCompletedTodosLength, setNotCompletedTodosLength] = useState<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,8 +120,8 @@ export const App: React.FC = React.memo(() => {
         setTodos(currentTodos =>
           currentTodos.map(todo => (todo.id === 0 ? newTodo : todo)),
         );
-      setQuery(''); // Clear the input after a successful request
-    })
+        setQuery(''); // Clear the input after a successful request
+      })
       .catch(error => {
         // On error, remove the tempTodo or show an error state
         setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
@@ -170,8 +173,14 @@ export const App: React.FC = React.memo(() => {
     }, 2000);
   }, []);
 
-  const notCompletedTodos = todos.filter(todo => !todo.completed);
-  const notCompletedTodosLength: number = notCompletedTodos.length;
+   useEffect(() => {
+     const notCompletedTodos = todos.filter(
+       todo => !todo.completed && !todo.isSubmitting, // Exclude todos that are being submitted
+     );
+      setNotCompletedTodosLength(notCompletedTodos.length);
+   }, [todos, isSubmitting]);
+
+
 
   function deleteThisTodo(todoId: number) {
     // Mark the todo as submitting to show a loader for the specific todo
@@ -183,6 +192,7 @@ export const App: React.FC = React.memo(() => {
 
     // Perform the deletion on the server
     return deleteTodo(todoId)
+
       .then(() => {
         // On success, remove the todo from the state
         setTodos(currentTodos =>
