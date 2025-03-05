@@ -92,6 +92,7 @@ export const App: React.FC = React.memo(() => {
       setTimeout(() => {
         setErrorMessage(''); // Reset error message after 3 seconds
       }, 3000);
+
       return;
     }
 
@@ -131,7 +132,6 @@ export const App: React.FC = React.memo(() => {
       });
   }
 
-
   const handleStatusChange = (value: 'all' | 'active' | 'completed') => {
     setStatus(value);
   };
@@ -150,7 +150,6 @@ export const App: React.FC = React.memo(() => {
   });
 
   useEffect(() => {
-
     setLoading(true);
     setTimeout(() => {
       getTodos()
@@ -206,7 +205,6 @@ export const App: React.FC = React.memo(() => {
       });
   }
 
-
   if (!USER_ID) {
     return <UserWarning />;
   }
@@ -252,7 +250,6 @@ export const App: React.FC = React.memo(() => {
               />
             )}
           </div>
-
         </section>
         {todos.length > 0 && (
           <div>

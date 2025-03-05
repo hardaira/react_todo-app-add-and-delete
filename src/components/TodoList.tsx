@@ -17,7 +17,6 @@ export const TodoList = ({
   todos,
   deleteThisTodo,
   handleCheckedChange,
-  isSubmitting,
 }: Props) => (
   <div>
     {todos.map(todo => (
@@ -53,15 +52,15 @@ export const TodoList = ({
 
         {/* overlay will cover the todo while it is being deleted or updated */}
 
-          <div
-            data-cy="TodoLoader"
-            className={classNames('modal overlay', { 'is-active': todo.isSubmitting })}
-
-          >
-            <div className="modal-background has-background-white-ter" />
-            <div className="loader" />
-          </div>
-
+        <div
+          data-cy="TodoLoader"
+          className={classNames('modal overlay', {
+            'is-active': todo.isSubmitting,
+          })}
+        >
+          <div className="modal-background has-background-white-ter" />
+          <div className="loader" />
+        </div>
       </div>
     ))}
   </div>
