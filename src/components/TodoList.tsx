@@ -46,6 +46,7 @@ export const TodoList = ({
           className="todo__remove"
           data-cy="TodoDelete"
           onClick={() => deleteThisTodo(todo.id)}
+          disabled={todo.isSubmitting}
         >
           ×
         </button>

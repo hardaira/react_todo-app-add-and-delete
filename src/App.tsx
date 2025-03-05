@@ -128,7 +128,9 @@ export const App: React.FC = React.memo(() => {
         throw error; // Propagate the error
       })
       .finally(() => {
-        setIsSubmitting(false); // Reset submitting state after the request is finished
+         // Reset submitting state after the request is finished
+        inputRef.current?.focus();
+        setIsSubmitting(false);
       });
   }
 
@@ -200,11 +202,16 @@ export const App: React.FC = React.memo(() => {
         throw error; // Propagate error for debugging
       })
       .finally(() => {
-        inputRef.current?.focus();
         setIsSubmitting(false);
+        inputRef.current?.focus();
       });
   }
-
+useEffect(() => {
+  if (inputRef.current && !isSubmitting) {
+    inputRef.current.focus();
+  }
+}, [query, todos, isSubmitting]);
+  
   if (!USER_ID) {
     return <UserWarning />;
   }
@@ -230,7 +237,7 @@ export const App: React.FC = React.memo(() => {
               onChange={handleQueryChange}
               ref={inputRef}
               autoFocus
-              disabled={isSubmitting}
+              disabled={todos.some(todo => todo.isSubmitting)}
             />
           </form>
         </header>
