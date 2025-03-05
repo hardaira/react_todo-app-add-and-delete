@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
+import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 
 type Props = {
@@ -9,12 +10,14 @@ type Props = {
   onSelect?: (todo: Todo) => void;
   isChecked: boolean;
   handleCheckedChange: (todoId: number) => void;
+  isSubmitting: boolean;
 };
 
 export const TodoList = ({
   todos,
   deleteThisTodo,
   handleCheckedChange,
+  isSubmitting,
 }: Props) => (
   <div>
     {todos.map(todo => (
@@ -49,10 +52,16 @@ export const TodoList = ({
         </button>
 
         {/* overlay will cover the todo while it is being deleted or updated */}
-        <div data-cy="TodoLoader" className="modal overlay">
-          <div className="modal-background has-background-white-ter" />
-          <div className="loader" />
-        </div>
+
+          <div
+            data-cy="TodoLoader"
+            className={classNames('modal overlay', { 'is-active': todo.isSubmitting })}
+
+          >
+            <div className="modal-background has-background-white-ter" />
+            <div className="loader" />
+          </div>
+
       </div>
     ))}
   </div>

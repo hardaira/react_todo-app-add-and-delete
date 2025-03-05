@@ -84,6 +84,7 @@ export const App: React.FC = React.memo(() => {
 
   function addTodo(event: React.FormEvent) {
     event.preventDefault();
+
     // Check if the query is empty
     if (!query.trim()) {
       setErrorMessage('Title should not be empty');
@@ -91,26 +92,34 @@ export const App: React.FC = React.memo(() => {
       setTimeout(() => {
         setErrorMessage(''); // Reset error message after 3 seconds
       }, 3000);
-
       return;
     }
 
+    // Create temporary todo to display optimistically
     const tempTodo: Todo = {
-      id: 0,
+      id: 0, // Temporarily set id to 0, it will be updated after successful API request
       userId: USER_ID,
       title: query,
       completed: false,
+      isSubmitting: true,
     };
 
-    setIsSubmitting(true);
+    // Optimistic update - Add tempTodo to the list immediately
+    setTodos(currentTodos => [...currentTodos, tempTodo]);
+    setQuery(''); // Clear input after adding the todo
+    setErrorMessage(''); // Clear error message if successful
+
     // Start API request and manage submission state
     return createTodo(tempTodo)
-      .then(TodoItem => {
-        setTodos(currentTodos => [...currentTodos, TodoItem]);
-        setQuery(''); // Clear input after adding the todo
-        setErrorMessage(''); // Clear error message if successful
+      .then(newTodo => {
+        // On success, replace the tempTodo with the actual todo from the API response
+        setTodos(currentTodos =>
+          currentTodos.map(todo => (todo.id === 0 ? newTodo : todo)),
+        );
       })
       .catch(error => {
+        // On error, remove the tempTodo or show an error state
+        setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
         setErrorMessage('Unable to add todo');
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
@@ -118,10 +127,10 @@ export const App: React.FC = React.memo(() => {
         throw error; // Propagate the error
       })
       .finally(() => {
-        setIsSubmitting(false);
-        // Reset submission state after the request is finished
+        setIsSubmitting(false); // Reset submitting state after the request is finished
       });
   }
+
 
   const handleStatusChange = (value: 'all' | 'active' | 'completed') => {
     setStatus(value);
@@ -141,6 +150,7 @@ export const App: React.FC = React.memo(() => {
   });
 
   useEffect(() => {
+
     setLoading(true);
     setTimeout(() => {
       getTodos()
@@ -162,21 +172,40 @@ export const App: React.FC = React.memo(() => {
   const notCompletedTodosLength: number = notCompletedTodos.length;
 
   function deleteThisTodo(todoId: number) {
-    setTodos(currentTodos => currentTodos.filter(todo => todo.id !== todoId));
+    // Mark the todo as submitting to show a loader for the specific todo
+    setTodos(currentTodos =>
+      currentTodos.map(todo =>
+        todo.id === todoId ? { ...todo, isSubmitting: true } : todo,
+      ),
+    );
 
+    // Perform the deletion on the server
     return deleteTodo(todoId)
+      .then(() => {
+        // On success, remove the todo from the state
+        setTodos(currentTodos =>
+          currentTodos.filter(todo => todo.id !== todoId),
+        );
+      })
       .catch(error => {
-        setTodos(todos);
+        // On error, revert the todo state and show the error message
+        setTodos(currentTodos =>
+          currentTodos.map(todo =>
+            todo.id === todoId ? { ...todo, isSubmitting: false } : todo,
+          ),
+        );
         setErrorMessage('Unable to delete todo');
         setTimeout(() => {
-          setErrorMessage(''); // Reset error message after 3 seconds
+          setErrorMessage('');
         }, 3000);
-        throw error;
+        throw error; // Propagate error for debugging
       })
       .finally(() => {
         inputRef.current?.focus();
+        setIsSubmitting(false);
       });
   }
+
 
   if (!USER_ID) {
     return <UserWarning />;
@@ -201,9 +230,9 @@ export const App: React.FC = React.memo(() => {
               placeholder="What needs to be done?"
               value={query}
               onChange={handleQueryChange}
-              disabled={isSubmitting}
               ref={inputRef}
               autoFocus
+              disabled={isSubmitting}
             />
           </form>
         </header>
@@ -218,11 +247,12 @@ export const App: React.FC = React.memo(() => {
                 deleteThisTodo={deleteThisTodo}
                 addTodo={addTodo}
                 isChecked={isChecked}
-                isSubmitting={isSubmitting}
+                isSubmitting={false}
                 handleCheckedChange={handleCheckedChange}
               />
             )}
           </div>
+
         </section>
         {todos.length > 0 && (
           <div>
