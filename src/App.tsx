@@ -107,7 +107,7 @@ export const App: React.FC = React.memo(() => {
 
     // Optimistic update - Add tempTodo to the list immediately
     setTodos(currentTodos => [...currentTodos, tempTodo]);
-    setQuery(''); // Clear input after adding the todo
+
     setErrorMessage(''); // Clear error message if successful
 
     // Start API request and manage submission state
@@ -117,7 +117,8 @@ export const App: React.FC = React.memo(() => {
         setTodos(currentTodos =>
           currentTodos.map(todo => (todo.id === 0 ? newTodo : todo)),
         );
-      })
+      setQuery(''); // Clear the input after a successful request
+    })
       .catch(error => {
         // On error, remove the tempTodo or show an error state
         setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
@@ -128,7 +129,7 @@ export const App: React.FC = React.memo(() => {
         throw error; // Propagate the error
       })
       .finally(() => {
-         // Reset submitting state after the request is finished
+        // Reset submitting state after the request is finished
         inputRef.current?.focus();
         setIsSubmitting(false);
       });
@@ -206,12 +207,13 @@ export const App: React.FC = React.memo(() => {
         inputRef.current?.focus();
       });
   }
-useEffect(() => {
-  if (inputRef.current && !isSubmitting) {
-    inputRef.current.focus();
-  }
-}, [query, todos, isSubmitting]);
-  
+
+  useEffect(() => {
+    if (inputRef.current && !isSubmitting) {
+      inputRef.current.focus();
+    }
+  }, [query, todos, isSubmitting]);
+
   if (!USER_ID) {
     return <UserWarning />;
   }
