@@ -103,7 +103,7 @@ export const App: React.FC = React.memo(() => {
     const tempTodo: Todo = {
       id: 0, // Temporarily set id to 0, it will be updated after successful API request
       userId: USER_ID,
-      title: query,
+      title: query.trim(),
       completed: false,
       isSubmitting: true,
     };
@@ -173,14 +173,12 @@ export const App: React.FC = React.memo(() => {
     }, 2000);
   }, []);
 
-   useEffect(() => {
-     const notCompletedTodos = todos.filter(
-       todo => !todo.completed && !todo.isSubmitting, // Exclude todos that are being submitted
-     );
-      setNotCompletedTodosLength(notCompletedTodos.length);
-   }, [todos, isSubmitting]);
-
-
+  useEffect(() => {
+    const notCompletedTodos = todos.filter(
+      todo => !todo.completed && !todo.isSubmitting, // Exclude todos that are being submitted
+    );
+    setNotCompletedTodosLength(notCompletedTodos.length);
+  }, [todos, isSubmitting]);
 
   function deleteThisTodo(todoId: number) {
     // Mark the todo as submitting to show a loader for the specific todo
@@ -192,7 +190,6 @@ export const App: React.FC = React.memo(() => {
 
     // Perform the deletion on the server
     return deleteTodo(todoId)
-
       .then(() => {
         // On success, remove the todo from the state
         setTodos(currentTodos =>
