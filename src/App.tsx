@@ -24,8 +24,7 @@ export const App: React.FC = React.memo(() => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tickPressed, setTickPressed] = useState(false);
-  const [notCompletedTodosLength, setNotCompletedTodosLength] =
-    useState<number>(0);
+  const [notCompletedTodosLength, setNotCompletedTodosLength] = useState<number>(0);
   //const [notCompletedTodosLength, setNotCompletedTodosLength] = useState<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -124,7 +123,7 @@ export const App: React.FC = React.memo(() => {
       })
       .catch(error => {
         // On error, remove the tempTodo or show an error state
-        setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
+        //setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
         setErrorMessage('Unable to add todo');
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
@@ -177,8 +176,12 @@ export const App: React.FC = React.memo(() => {
     const notCompletedTodos = todos.filter(
       todo => !todo.completed && !todo.isSubmitting, // Exclude todos that are being submitted
     );
+
     setNotCompletedTodosLength(notCompletedTodos.length);
   }, [todos, isSubmitting]);
+
+  //const notCompletedTodos = todos.filter(todo => !todo.completed);
+  //const notCompletedTodosLength = notCompletedTodos.length;
 
   function deleteThisTodo(todoId: number) {
     // Mark the todo as submitting to show a loader for the specific todo
