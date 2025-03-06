@@ -122,14 +122,14 @@ export const App: React.FC = React.memo(() => {
         );
         setQuery(''); // Clear the input after a successful request
       })
-      .catch(error => {
+      .catch(() => {
         // On error, remove the tempTodo or show an error state
         setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
-        setErrorMessage('Unable to add ф todo');
+        setErrorMessage('Unable to add а todo');
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
         }, 3000);
-        throw error; // Propagate the error
+        //throw error; 
       })
       .finally(() => {
         // Reset submitting state after the request is finished
