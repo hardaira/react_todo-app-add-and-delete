@@ -125,7 +125,7 @@ export const App: React.FC = React.memo(() => {
       .catch(error => {
         // On error, remove the tempTodo or show an error state
         setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
-        setErrorMessage('Unable to add todo');
+        setErrorMessage('Unable to add ф todo');
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
         }, 3000);
@@ -158,18 +158,18 @@ export const App: React.FC = React.memo(() => {
   useEffect(() => {
     setLoading(true);
     //setTimeout(() => {
-      getTodos()
-        .then(data => setTodos(data))
-        .catch(error => {
-          setErrorMessage('Unable to load todos');
-          setTimeout(() => {
-            setErrorMessage('');
-          }, 3000);
-          throw error;
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+    getTodos()
+      .then(data => setTodos(data))
+      .catch(error => {
+        setErrorMessage('Unable to load todos');
+        setTimeout(() => {
+          setErrorMessage('');
+        }, 3000);
+        throw error;
+      })
+      .finally(() => {
+        setLoading(false);
+      });
     //}, 2000);
   }, []);
 
