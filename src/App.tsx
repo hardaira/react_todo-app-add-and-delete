@@ -24,7 +24,8 @@ export const App: React.FC = React.memo(() => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tickPressed, setTickPressed] = useState(false);
-  const [notCompletedTodosLength, setNotCompletedTodosLength] = useState<number>(0);
+  const [notCompletedTodosLength, setNotCompletedTodosLength] =
+    useState<number>(0);
   //const [notCompletedTodosLength, setNotCompletedTodosLength] = useState<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -123,7 +124,7 @@ export const App: React.FC = React.memo(() => {
       })
       .catch(error => {
         // On error, remove the tempTodo or show an error state
-        //setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
+        setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
         setErrorMessage('Unable to add todo');
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
@@ -156,7 +157,7 @@ export const App: React.FC = React.memo(() => {
 
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
+    //setTimeout(() => {
       getTodos()
         .then(data => setTodos(data))
         .catch(error => {
@@ -169,7 +170,7 @@ export const App: React.FC = React.memo(() => {
         .finally(() => {
           setLoading(false);
         });
-    }, 2000);
+    //}, 2000);
   }, []);
 
   useEffect(() => {
