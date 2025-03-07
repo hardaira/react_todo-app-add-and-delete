@@ -15,7 +15,7 @@ import { Todo } from './types/Todo';
 import { TodoList } from './components/TodoList';
 import classNames from 'classnames';
 
-export const App: React.FC = React.memo(() => {
+export const App: React.FC = (() => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
@@ -200,18 +200,18 @@ export const App: React.FC = React.memo(() => {
           currentTodos.filter(todo => todo.id !== todoId),
         );
       })
-      .catch(error => {
+      .catch(() => {
         // On error, revert the todo state and show the error message
         setTodos(currentTodos =>
           currentTodos.map(todo =>
             todo.id === todoId ? { ...todo, isSubmitting: false } : todo,
           ),
         );
-        setErrorMessage('Unable to delete todo');
+        setErrorMessage('Unable to delete a todo');
         setTimeout(() => {
           setErrorMessage('');
         }, 3000);
-        throw error; // Propagate error for debugging
+        //throw error; // Propagate error for debugging
       })
       .finally(() => {
         setIsSubmitting(false);

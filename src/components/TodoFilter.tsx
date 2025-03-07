@@ -26,6 +26,8 @@ export const TodoFilter: React.FC<Props> = ({
     handleStatusChange(value);
   };
 
+  const isCompleted = todos.some(todo => todo.completed);
+
   const clearCompletedTodos = () => {
     todos
       .filter(todo => todo.completed) // Only completed todos
@@ -72,8 +74,9 @@ export const TodoFilter: React.FC<Props> = ({
         className="todoapp__clear-completed"
         data-cy="ClearCompletedButton"
         onClick={clearCompletedTodos}
+        disabled={!isCompleted}
         style={{
-          visibility: todos.some(todo => todo.completed) ? 'visible' : 'hidden',
+          visibility: isCompleted ? 'visible' : 'hidden',
         }}
       >
         Clear completed
