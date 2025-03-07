@@ -15,7 +15,7 @@ import { Todo } from './types/Todo';
 import { TodoList } from './components/TodoList';
 import classNames from 'classnames';
 
-export const App: React.FC = (() => {
+export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
@@ -49,12 +49,13 @@ export const App: React.FC = (() => {
 
     // Update all todos on the server
     updatedTodos.forEach(updatedTodo => {
-      updateTodo(updatedTodo).catch(error => {
+      updateTodo(updatedTodo)
+        .catch(() => {
         setErrorMessage('Unable to update todos');
         setTimeout(() => {
           setErrorMessage('');
         }, 3000);
-        throw error; // Propagate error for debugging
+        //throw error; // Propagate error for debugging
       });
     });
   };
@@ -76,12 +77,13 @@ export const App: React.FC = (() => {
     );
 
     // Update the todo on the server
-    updateTodo(updatedTodo).catch(error => {
+    updateTodo(updatedTodo)
+      .catch(() => {
       setErrorMessage('Unable to update todo');
       setTimeout(() => {
         setErrorMessage(''); // Reset error message after 3 seconds
       }, 3000);
-      throw error; // Propagate error for debugging
+      //throw error; // Propagate error for debugging
     });
   };
 
@@ -160,12 +162,12 @@ export const App: React.FC = (() => {
     //setTimeout(() => {
     getTodos()
       .then(data => setTodos(data))
-      .catch(error => {
+      .catch(() => {
         setErrorMessage('Unable to load todos');
         setTimeout(() => {
           setErrorMessage('');
         }, 3000);
-        throw error;
+        //throw error;
       })
       .finally(() => {
         setLoading(false);
@@ -303,7 +305,8 @@ export const App: React.FC = (() => {
       </div>
     </div>
   );
-});
+};
+
 App.displayName = 'App';
 
 export default React.memo(App);
