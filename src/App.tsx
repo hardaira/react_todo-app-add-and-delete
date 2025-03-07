@@ -125,11 +125,11 @@ export const App: React.FC = React.memo(() => {
       .catch(() => {
         // On error, remove the tempTodo or show an error state
         setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
-        setErrorMessage('Unable to add а todo');
+        setErrorMessage('Unable to update a todo');
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
         }, 3000);
-        //throw error; 
+        //throw error;
       })
       .finally(() => {
         // Reset submitting state after the request is finished
