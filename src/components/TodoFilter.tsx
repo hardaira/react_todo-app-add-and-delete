@@ -1,9 +1,10 @@
 import React from 'react';
 import { Todo } from '../types/Todo';
+import { TodoStatus } from '../types/TodoStatus'; // Import the TodoStatus enum
 
 type Props = {
-  handleStatusChange: (value: 'all' | 'active' | 'completed') => void;
-  status: 'all' | 'active' | 'completed';
+  status: TodoStatus; // Use TodoStatus enum here
+  handleStatusChange: (status: TodoStatus) => void;
   todos: Todo[];
   deleteThisTodo: (todoId: number) => void;
   handleCheckedChange: (todoId: number) => void;
@@ -20,10 +21,10 @@ export const TodoFilter: React.FC<Props> = ({
 }) => {
   const handleClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    value: 'all' | 'active' | 'completed',
+    value: TodoStatus,
   ) => {
     e.preventDefault();
-    handleStatusChange(value);
+    handleStatusChange(value); // Pass the TodoStatus enum value
   };
 
   const isCompleted = todos.some(todo => todo.completed);
@@ -43,27 +44,27 @@ export const TodoFilter: React.FC<Props> = ({
       <nav className="filter" data-cy="Filter">
         <a
           href="#/"
-          className={`filter__link ${status === 'all' ? 'selected' : ''}`}
+          className={`filter__link ${status === TodoStatus.All ? 'selected' : ''}`}
           data-cy="FilterLinkAll"
-          onClick={e => handleClick(e, 'all')}
+          onClick={e => handleClick(e, TodoStatus.All)}
         >
           All
         </a>
 
         <a
           href="#/active"
-          className={`filter__link ${status === 'active' ? 'selected' : ''}`}
+          className={`filter__link ${status === TodoStatus.Active ? 'selected' : ''}`}
           data-cy="FilterLinkActive"
-          onClick={e => handleClick(e, 'active')}
+          onClick={e => handleClick(e, TodoStatus.Active)}
         >
           Active
         </a>
 
         <a
           href="#/completed"
-          className={`filter__link ${status === 'completed' ? 'selected' : ''}`}
+          className={`filter__link ${status === TodoStatus.Completed ? 'selected' : ''}`}
           data-cy="FilterLinkCompleted"
-          onClick={e => handleClick(e, 'completed')}
+          onClick={e => handleClick(e, TodoStatus.Completed)}
         >
           Completed
         </a>

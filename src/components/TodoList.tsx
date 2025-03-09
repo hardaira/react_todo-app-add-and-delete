@@ -7,26 +7,22 @@ import { Todo } from '../types/Todo';
 type Props = {
   todos: Todo[];
   deleteThisTodo: (todoId: number) => void;
-  onSelect?: (todo: Todo) => void;
   isChecked: boolean;
   handleCheckedChange: (todoId: number) => void;
   isSubmitting: boolean;
   isEdited: boolean;
-  handleTitleDoubleClick: (todoId: number) => void;
   selectedTodoId: number;
   setIsEdited: (isEdited: boolean) => void;
   setSelectedTodoId: (todoId: number) => void;
   handleTitleChange: (todoId: number, title: string) => void;
 };
 
-export const TodoList = ({
+export const TodoList: React.FC<Props> = ({
   todos,
   deleteThisTodo,
   handleCheckedChange,
   handleTitleChange,
-  //isSubmitting,
   isEdited,
-  //handleTitleDoubleClick,
   selectedTodoId,
   setIsEdited,
   setSelectedTodoId,
@@ -54,6 +50,7 @@ export const TodoList = ({
             onSubmit={e => {
               e.preventDefault();
               const newTitle = e.target[0].value.trim(); // Get the value from the input field
+
               if (newTitle !== todo.title) {
                 // Only update if the title has changed
                 handleTitleChange(todo.id, newTitle); // Call handleTitleChange with the new title

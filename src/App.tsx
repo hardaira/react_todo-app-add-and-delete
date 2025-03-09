@@ -12,14 +12,15 @@ import {
 } from './api/todos';
 import { TodoFilter } from './components/TodoFilter';
 import { Todo } from './types/Todo';
+import { TodoStatus } from './types/TodoStatus';
 import { TodoList } from './components/TodoList';
-import classNames from 'classnames';
+import { Header } from './components/Header';
+import { ErrorNotification } from './components/ErrorNotification';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
-  const [status, setStatus] = useState<'all' | 'active' | 'completed'>('all');
   const [isChecked, setIsChecked] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,8 +29,8 @@ export const App: React.FC = () => {
   const [tickPressed, setTickPressed] = useState(false);
   const [notCompletedTodosLength, setNotCompletedTodosLength] =
     useState<number>(0);
-  //const [notCompletedTodosLength, setNotCompletedTodosLength] = useState<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [status, setStatus] = useState<TodoStatus>(TodoStatus.All);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
@@ -87,11 +88,6 @@ export const App: React.FC = () => {
     });
   };
 
-//const handleTitleDoubleClick = todoId => {
-  //setIsEdited(true);
-  //setSelectedTodoId(todoId);
-//};
-
   const handleTitleChange = (todoId: number, newTitle: string) => {
     // Find the todo item by its ID
     const todo = todos.find(t => t.id === todoId);
@@ -142,7 +138,6 @@ export const App: React.FC = () => {
       });
   };
 
-
   function addTodo(event: React.FormEvent) {
     event.preventDefault();
 
@@ -183,7 +178,7 @@ export const App: React.FC = () => {
       .catch(() => {
         // On error, remove the tempTodo or show an error state
         setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
-        setErrorMessage('Unable to update a todo');
+        setErrorMessage('Unable to add a todo');
         setTimeout(() => {
           setErrorMessage(''); // Reset error message after 3 seconds
         }, 3000);
@@ -196,26 +191,25 @@ export const App: React.FC = () => {
       });
   }
 
-  const handleStatusChange = (value: 'all' | 'active' | 'completed') => {
+  const handleStatusChange = (value: TodoStatus) => {
     setStatus(value);
   };
 
   // Filter todos based on status and query
   const filteredTodos = todos.filter(todo => {
-    if (status === 'active') {
+    if (status === TodoStatus.Active) {
       return !todo.completed;
     }
 
-    if (status === 'completed') {
+    if (status === TodoStatus.Completed) {
       return todo.completed;
     }
 
-    return true; // For 'all' status, return all todos
+    return true;
   });
 
   useEffect(() => {
     setLoading(true);
-    //setTimeout(() => {
     getTodos()
       .then(data => setTodos(data))
       .catch(() => {
@@ -228,7 +222,6 @@ export const App: React.FC = () => {
       .finally(() => {
         setLoading(false);
       });
-    //}, 2000);
   }, []);
 
   useEffect(() => {
@@ -238,9 +231,6 @@ export const App: React.FC = () => {
 
     setNotCompletedTodosLength(notCompletedTodos.length);
   }, [todos, isSubmitting]);
-
-  //const notCompletedTodos = todos.filter(todo => !todo.completed);
-  //const notCompletedTodosLength = notCompletedTodos.length;
 
   function deleteThisTodo(todoId: number) {
     // Mark the todo as submitting to show a loader for the specific todo
@@ -291,27 +281,14 @@ export const App: React.FC = () => {
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
       <div className="todoapp__content">
-        <header className="todoapp__header">
-          <button
-            type="button"
-            className="todoapp__toggle-all active"
-            data-cy="ToggleAllButton"
-            onClick={handleTickPressed}
-          />
-          <form onSubmit={addTodo}>
-            <input
-              data-cy="NewTodoField"
-              type="text"
-              className="todoapp__new-todo"
-              placeholder="What needs to be done?"
-              value={query}
-              onChange={handleQueryChange}
-              ref={inputRef}
-              autoFocus
-              disabled={todos.some(todo => todo.isSubmitting)}
-            />
-          </form>
-        </header>
+        <Header
+          todos={filteredTodos}
+          handleTickPressed={handleTickPressed}
+          query={query}
+          handleQueryChange={handleQueryChange}
+          inputRef={inputRef}
+          addTodo={addTodo}
+        />
 
         <section className="todoapp__main" data-cy="TodoList">
           <div>
@@ -319,7 +296,6 @@ export const App: React.FC = () => {
               <TodoList
                 todos={filteredTodos}
                 deleteThisTodo={deleteThisTodo}
-                addTodo={addTodo}
                 isChecked={isChecked}
                 isSubmitting={false}
                 isEdited={isEdited}
@@ -328,7 +304,6 @@ export const App: React.FC = () => {
                 handleTitleChange={handleTitleChange}
                 selectedTodoId={selectedTodoId || 0}
                 setSelectedTodoId={setSelectedTodoId}
-                //handleTitleDoubleClick={handleTitleDoubleClick}
               />
             )}
           </div>
@@ -347,28 +322,12 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      <div
-        data-cy="ErrorNotification"
-        className={classNames(
-          'notification is-danger is-light has-text-weight-normal',
-          {
-            hidden: !errorMessage,
-          },
-        )}
-      >
-        <button
-          data-cy="HideErrorButton"
-          type="button"
-          className="delete"
-          onClick={() => setErrorMessage('')}
-        />
-        {errorMessage}
-      </div>
+      <ErrorNotification
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+      />
     </div>
   );
-
-
-
 };
 
 App.displayName = 'App';
