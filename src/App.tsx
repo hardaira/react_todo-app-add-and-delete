@@ -23,6 +23,8 @@ export const App: React.FC = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEdited, setIsEdited] = useState(false);
+  const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
   const [tickPressed, setTickPressed] = useState(false);
   const [notCompletedTodosLength, setNotCompletedTodosLength] =
     useState<number>(0);
@@ -49,8 +51,7 @@ export const App: React.FC = () => {
 
     // Update all todos on the server
     updatedTodos.forEach(updatedTodo => {
-      updateTodo(updatedTodo)
-        .catch(() => {
+      updateTodo(updatedTodo).catch(() => {
         setErrorMessage('Unable to update todos');
         setTimeout(() => {
           setErrorMessage('');
@@ -77,15 +78,70 @@ export const App: React.FC = () => {
     );
 
     // Update the todo on the server
-    updateTodo(updatedTodo)
-      .catch(() => {
-      setErrorMessage('Unable to update todo');
+    updateTodo(updatedTodo).catch(() => {
+      setErrorMessage('Unable to update a todo');
       setTimeout(() => {
         setErrorMessage(''); // Reset error message after 3 seconds
       }, 3000);
       //throw error; // Propagate error for debugging
     });
   };
+
+//const handleTitleDoubleClick = todoId => {
+  //setIsEdited(true);
+  //setSelectedTodoId(todoId);
+//};
+
+  const handleTitleChange = (todoId: number, newTitle: string) => {
+    // Find the todo item by its ID
+    const todo = todos.find(t => t.id === todoId);
+
+    if (!todo) {
+      return; // If the todo doesn't exist, do nothing
+    }
+
+    // Only proceed if the title has actually changed
+    if (todo.title === newTitle) {
+      return; // No need to update if the title is the same
+    }
+
+    // Mark the todo as submitting to show a loader for the specific todo
+    setTodos(prevTodos =>
+      prevTodos.map(t => (t.id === todoId ? { ...t, isSubmitting: true } : t)),
+    );
+
+    // Perform the title change on the server
+    return updateTodo({ ...todo, title: newTitle })
+      .then(() => {
+        // Update the local state with the new title after success
+        setTodos(prevTodos =>
+          prevTodos.map(t =>
+            t.id === todoId
+              ? { ...t, title: newTitle, isSubmitting: false }
+              : t,
+          ),
+        );
+
+        // Reset the editing state and selected todo id
+        setIsEdited(false);
+        setSelectedTodoId(null);
+      })
+      .catch(() => {
+        // Handle error by resetting the submitting state and showing an error message
+        setErrorMessage('Unable to update a todo');
+
+        setTodos(prevTodos =>
+          prevTodos.map(t =>
+            t.id === todoId ? { ...t, isSubmitting: false } : t,
+          ),
+        );
+
+        setTimeout(() => {
+          setErrorMessage(''); // Reset error message after 3 seconds
+        }, 3000);
+      });
+  };
+
 
   function addTodo(event: React.FormEvent) {
     event.preventDefault();
@@ -262,17 +318,22 @@ export const App: React.FC = () => {
             {!loading && (
               <TodoList
                 todos={filteredTodos}
-                setSelectedTodo={() => {}}
-                selectedTodo={null}
                 deleteThisTodo={deleteThisTodo}
                 addTodo={addTodo}
                 isChecked={isChecked}
                 isSubmitting={false}
+                isEdited={isEdited}
+                setIsEdited={setIsEdited}
                 handleCheckedChange={handleCheckedChange}
+                handleTitleChange={handleTitleChange}
+                selectedTodoId={selectedTodoId || 0}
+                setSelectedTodoId={setSelectedTodoId}
+                //handleTitleDoubleClick={handleTitleDoubleClick}
               />
             )}
           </div>
         </section>
+
         {todos.length > 0 && (
           <div>
             <TodoFilter
@@ -305,6 +366,9 @@ export const App: React.FC = () => {
       </div>
     </div>
   );
+
+
+
 };
 
 App.displayName = 'App';
