@@ -88,12 +88,53 @@ export const App: React.FC = () => {
     });
   };
 
+  function deleteThisTodo(todoId: number) {
+    // Mark the todo as submitting to show a loader for the specific todo
+    setTodos(currentTodos =>
+      currentTodos.map(todo =>
+        todo.id === todoId ? { ...todo, isSubmitting: true } : todo,
+      ),
+    );
+
+    // Perform the deletion on the server
+    return deleteTodo(todoId)
+      .then(() => {
+        // On success, remove the todo from the state
+        setTodos(currentTodos =>
+          currentTodos.filter(todo => todo.id !== todoId),
+        );
+      })
+      .catch(() => {
+        // On error, revert the todo state and show the error message
+        setTodos(currentTodos =>
+          currentTodos.map(todo =>
+            todo.id === todoId ? { ...todo, isSubmitting: false } : todo,
+          ),
+        );
+        setErrorMessage('Unable to delete a todo');
+        setTimeout(() => {
+          setErrorMessage('');
+        }, 3000);
+        //throw error; // Propagate error for debugging
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+        inputRef.current?.focus();
+      });
+  }
+
   const handleTitleChange = (todoId: number, newTitle: string) => {
     // Find the todo item by its ID
     const todo = todos.find(t => t.id === todoId);
 
     if (!todo) {
       return; // If the todo doesn't exist, do nothing
+    }
+
+    if (!newTitle.trim()) {
+      deleteThisTodo(todoId);
+
+      return;
     }
 
     // Only proceed if the title has actually changed
@@ -136,6 +177,16 @@ export const App: React.FC = () => {
           setErrorMessage(''); // Reset error message after 3 seconds
         }, 3000);
       });
+  };
+
+  const submitChangedTitle = (e, todo) => {
+    e.preventDefault();
+    const newTitle = e.target[0].value.trim(); // Get the value from the input field
+
+    if (newTitle !== todo.title) {
+      // Only update if the title has changed
+      handleTitleChange(todo.id, newTitle); // Call handleTitleChange with the new title
+    }
   };
 
   function addTodo(event: React.FormEvent) {
@@ -232,41 +283,6 @@ export const App: React.FC = () => {
     setNotCompletedTodosLength(notCompletedTodos.length);
   }, [todos, isSubmitting]);
 
-  function deleteThisTodo(todoId: number) {
-    // Mark the todo as submitting to show a loader for the specific todo
-    setTodos(currentTodos =>
-      currentTodos.map(todo =>
-        todo.id === todoId ? { ...todo, isSubmitting: true } : todo,
-      ),
-    );
-
-    // Perform the deletion on the server
-    return deleteTodo(todoId)
-      .then(() => {
-        // On success, remove the todo from the state
-        setTodos(currentTodos =>
-          currentTodos.filter(todo => todo.id !== todoId),
-        );
-      })
-      .catch(() => {
-        // On error, revert the todo state and show the error message
-        setTodos(currentTodos =>
-          currentTodos.map(todo =>
-            todo.id === todoId ? { ...todo, isSubmitting: false } : todo,
-          ),
-        );
-        setErrorMessage('Unable to delete a todo');
-        setTimeout(() => {
-          setErrorMessage('');
-        }, 3000);
-        //throw error; // Propagate error for debugging
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-        inputRef.current?.focus();
-      });
-  }
-
   useEffect(() => {
     if (inputRef.current && !isSubmitting) {
       inputRef.current.focus();
@@ -304,6 +320,7 @@ export const App: React.FC = () => {
                 handleTitleChange={handleTitleChange}
                 selectedTodoId={selectedTodoId || 0}
                 setSelectedTodoId={setSelectedTodoId}
+                submitChangedTitle={submitChangedTitle}
               />
             )}
           </div>
