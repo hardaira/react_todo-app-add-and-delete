@@ -37,12 +37,12 @@ export const App: React.FC = () => {
     setIsChecked(false);
   };
 
-  const handleTickPressed = () => {
-    const allCompleted = todos.every(todo => todo.completed); 
+  const handleToggleAllClick = () => {
+    const allCompleted = todos.every(todo => todo.completed);
 
     const updatedTodos = todos.map(todo => ({
       ...todo,
-      completed: !allCompleted, 
+      completed: !allCompleted,
       isSubmitting: true,
     }));
 
@@ -71,7 +71,6 @@ export const App: React.FC = () => {
       );
     });
   };
-
 
   const handleCheckedChange = (todoId: number) => {
     const todo = todos.find(t => t.id === todoId);
@@ -278,9 +277,9 @@ export const App: React.FC = () => {
       });
   }, []);
 
-const notCompletedTodos = todos.filter(
-      todo => !todo.completed && !todo.isSubmitting,
-    ).length;
+  const notCompletedTodos = todos.filter(
+    todo => !todo.completed && !todo.isSubmitting,
+  ).length;
 
   useEffect(() => {
     if (inputRef.current && !isSubmitting) {
@@ -298,7 +297,7 @@ const notCompletedTodos = todos.filter(
       <div className="todoapp__content">
         <Header
           todos={filteredTodos}
-          handleTickPressed={handleTickPressed}
+          handleToggleAllClick={handleToggleAllClick}
           query={query}
           handleQueryChange={handleQueryChange}
           inputRef={inputRef}
@@ -333,7 +332,6 @@ const notCompletedTodos = todos.filter(
               status={status}
               deleteThisTodo={deleteThisTodo}
               notCompletedTodos={notCompletedTodos}
-              
             />
           </div>
         )}

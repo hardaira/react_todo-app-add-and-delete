@@ -3,7 +3,7 @@ import { Todo } from '../types/Todo';
 
 type Props = {
   todos: Todo[];
-  handleTickPressed: () => void;
+  handleToggleAllClick: () => void;
   query: string;
   handleQueryChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   inputRef: React.RefObject<HTMLInputElement>;
@@ -12,7 +12,7 @@ type Props = {
 
 export const Header: React.FC<Props> = ({
   todos,
-  handleTickPressed,
+  handleToggleAllClick,
   query,
   handleQueryChange,
   inputRef,
@@ -24,7 +24,7 @@ export const Header: React.FC<Props> = ({
         type="button"
         className="todoapp__toggle-all active"
         data-cy="ToggleAllButton"
-        onClick={handleTickPressed}
+        onClick={handleToggleAllClick}
       />
       <form onSubmit={addTodo}>
         <input
