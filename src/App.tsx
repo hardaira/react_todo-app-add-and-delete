@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 
@@ -39,73 +40,100 @@ export const App: React.FC = () => {
   };
 
   const handleTickPressed = () => {
-    const allCompleted = !tickPressed; // If tickPressed is true, we want to set all to incomplete, otherwise set all to completed
+    const allCompleted = !tickPressed;
+
+    const previousTodos = [...todos];
+    const previousTickPressed = tickPressed;
 
     const updatedTodos = todos.map(todo => ({
       ...todo,
-      completed: allCompleted, // Set all todos to completed or incomplete based on tickPressed
+      completed: allCompleted,
+      isSubmitting: true,
     }));
 
-    // Update local state
     setTodos(updatedTodos);
-    setTickPressed(allCompleted); // Toggle the tickPressed state to reflect the current status (completed or incomplete)
+    setTickPressed(allCompleted);
 
-    // Update all todos on the server
-    updatedTodos.forEach(updatedTodo => {
+    const updatePromises = updatedTodos.map(updatedTodo =>
       updateTodo(updatedTodo).catch(() => {
         setErrorMessage('Unable to update todos');
         setTimeout(() => {
           setErrorMessage('');
         }, 3000);
-        //throw error; // Propagate error for debugging
-      });
+
+        setTodos(previousTodos);
+        setTickPressed(previousTickPressed);
+
+        throw new Error('Unable to update todos');
+      }),
+    );
+
+    Promise.all(updatePromises).finally(() => {
+      setTodos(prevTodos =>
+        prevTodos.map(t =>
+          updatedTodos.find(updatedTodo => updatedTodo.id === t.id)
+            ? { ...t, isSubmitting: false }
+            : t,
+        ),
+      );
     });
   };
 
   const handleCheckedChange = (todoId: number) => {
-    // Find the todo item by its ID
     const todo = todos.find(t => t.id === todoId);
 
     if (!todo) {
       return;
     }
 
-    // Toggle the completed state locally first
-    const updatedTodo = { ...todo, completed: !todo.completed };
+    const previousTodo = { ...todo };
 
-    // Update the local state
+    const updatedTodo = {
+      ...todo,
+      completed: !todo.completed,
+      isSubmitting: true,
+    };
+
     setTodos(currentTodos =>
       currentTodos.map(t => (t.id === todoId ? updatedTodo : t)),
     );
 
-    // Update the todo on the server
-    updateTodo(updatedTodo).catch(() => {
-      setErrorMessage('Unable to update a todo');
-      setTimeout(() => {
-        setErrorMessage(''); // Reset error message after 3 seconds
-      }, 3000);
-      //throw error; // Propagate error for debugging
-    });
+    updateTodo(updatedTodo)
+      .catch(() => {
+        setErrorMessage('Unable to update a todo');
+        setTimeout(() => {
+          setErrorMessage('');
+        }, 3000);
+
+        setTodos(currentTodos =>
+          currentTodos.map(t => (t.id === todoId ? previousTodo : t)),
+        );
+
+        throw new Error('Unable to update a todo');
+      })
+      .finally(() => {
+        setTodos(prevTodos =>
+          prevTodos.map(t =>
+            t.id === todoId ? { ...t, isSubmitting: false } : t,
+          ),
+        );
+      });
   };
 
-  function deleteThisTodo(todoId: number) {
-    // Mark the todo as submitting to show a loader for the specific todo
+  const deleteThisTodo = (todoId: number) => {
     setTodos(currentTodos =>
       currentTodos.map(todo =>
         todo.id === todoId ? { ...todo, isSubmitting: true } : todo,
       ),
     );
 
-    // Perform the deletion on the server
     return deleteTodo(todoId)
       .then(() => {
-        // On success, remove the todo from the state
         setTodos(currentTodos =>
           currentTodos.filter(todo => todo.id !== todoId),
         );
       })
       .catch(() => {
-        // On error, revert the todo state and show the error message
         setTodos(currentTodos =>
           currentTodos.map(todo =>
             todo.id === todoId ? { ...todo, isSubmitting: false } : todo,
@@ -115,20 +143,18 @@ export const App: React.FC = () => {
         setTimeout(() => {
           setErrorMessage('');
         }, 3000);
-        //throw error; // Propagate error for debugging
       })
       .finally(() => {
         setIsSubmitting(false);
         inputRef.current?.focus();
       });
-  }
+  };
 
   const handleTitleChange = (todoId: number, newTitle: string) => {
-    // Find the todo item by its ID
     const todo = todos.find(t => t.id === todoId);
 
     if (!todo) {
-      return; // If the todo doesn't exist, do nothing
+      return;
     }
 
     if (!newTitle.trim()) {
@@ -137,20 +163,18 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Only proceed if the title has actually changed
-    if (todo.title === newTitle) {
-      return; // No need to update if the title is the same
+    if (todo.title === newTitle.trim()) {
+      setIsEdited(false);
+
+      return;
     }
 
-    // Mark the todo as submitting to show a loader for the specific todo
     setTodos(prevTodos =>
       prevTodos.map(t => (t.id === todoId ? { ...t, isSubmitting: true } : t)),
     );
 
-    // Perform the title change on the server
     return updateTodo({ ...todo, title: newTitle })
       .then(() => {
-        // Update the local state with the new title after success
         setTodos(prevTodos =>
           prevTodos.map(t =>
             t.id === todoId
@@ -159,12 +183,10 @@ export const App: React.FC = () => {
           ),
         );
 
-        // Reset the editing state and selected todo id
         setIsEdited(false);
         setSelectedTodoId(null);
       })
       .catch(() => {
-        // Handle error by resetting the submitting state and showing an error message
         setErrorMessage('Unable to update a todo');
 
         setTodos(prevTodos =>
@@ -174,79 +196,67 @@ export const App: React.FC = () => {
         );
 
         setTimeout(() => {
-          setErrorMessage(''); // Reset error message after 3 seconds
+          setErrorMessage('');
         }, 3000);
       });
   };
 
   const submitChangedTitle = (e, todo) => {
     e.preventDefault();
-    const newTitle = e.target[0].value.trim(); // Get the value from the input field
+    const newTitle = e.target[0].value.trim();
 
-    if (newTitle !== todo.title) {
-      // Only update if the title has changed
-      handleTitleChange(todo.id, newTitle); // Call handleTitleChange with the new title
-    }
+    handleTitleChange(todo.id, newTitle);
   };
 
-  function addTodo(event: React.FormEvent) {
+  const addTodo = (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Check if the query is empty
     if (!query.trim()) {
       setErrorMessage('Title should not be empty');
-      setIsSubmitting(false); // Reset the submitting state when query is invalid
+      setIsSubmitting(false);
       setTimeout(() => {
-        setErrorMessage(''); // Reset error message after 3 seconds
+        setErrorMessage('');
       }, 3000);
 
       return;
     }
 
-    // Create temporary todo to display optimistically
     const tempTodo: Todo = {
-      id: 0, // Temporarily set id to 0, it will be updated after successful API request
+      id: 0,
       userId: USER_ID,
       title: query.trim(),
       completed: false,
       isSubmitting: true,
     };
 
-    // Optimistic update - Add tempTodo to the list immediately
     setTodos(currentTodos => [...currentTodos, tempTodo]);
 
     setErrorMessage(''); // Clear error message if successful
 
-    // Start API request and manage submission state
     return createTodo(tempTodo)
       .then(newTodo => {
-        // On success, replace the tempTodo with the actual todo from the API response
         setTodos(currentTodos =>
           currentTodos.map(todo => (todo.id === 0 ? newTodo : todo)),
         );
-        setQuery(''); // Clear the input after a successful request
+        setQuery('');
       })
       .catch(() => {
-        // On error, remove the tempTodo or show an error state
         setTodos(currentTodos => currentTodos.filter(todo => todo.id !== 0));
         setErrorMessage('Unable to add a todo');
         setTimeout(() => {
-          setErrorMessage(''); // Reset error message after 3 seconds
+          setErrorMessage('');
         }, 3000);
-        //throw error;
       })
       .finally(() => {
-        // Reset submitting state after the request is finished
         inputRef.current?.focus();
         setIsSubmitting(false);
       });
-  }
+  };
 
   const handleStatusChange = (value: TodoStatus) => {
     setStatus(value);
   };
 
-  // Filter todos based on status and query
   const filteredTodos = todos.filter(todo => {
     if (status === TodoStatus.Active) {
       return !todo.completed;
@@ -262,13 +272,12 @@ export const App: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     getTodos()
-      .then(data => setTodos(data))
+      .then(setTodos)
       .catch(() => {
         setErrorMessage('Unable to load todos');
         setTimeout(() => {
           setErrorMessage('');
         }, 3000);
-        //throw error;
       })
       .finally(() => {
         setLoading(false);
@@ -277,7 +286,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     const notCompletedTodos = todos.filter(
-      todo => !todo.completed && !todo.isSubmitting, // Exclude todos that are being submitted
+      todo => !todo.completed && !todo.isSubmitting,
     );
 
     setNotCompletedTodosLength(notCompletedTodos.length);

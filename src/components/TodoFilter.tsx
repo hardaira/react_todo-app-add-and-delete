@@ -1,9 +1,10 @@
+import classNames from 'classnames';
 import React from 'react';
 import { Todo } from '../types/Todo';
-import { TodoStatus } from '../types/TodoStatus'; // Import the TodoStatus enum
+import { TodoStatus } from '../types/TodoStatus';
 
 type Props = {
-  status: TodoStatus; // Use TodoStatus enum here
+  status: TodoStatus;
   handleStatusChange: (status: TodoStatus) => void;
   todos: Todo[];
   deleteThisTodo: (todoId: number) => void;
@@ -24,15 +25,15 @@ export const TodoFilter: React.FC<Props> = ({
     value: TodoStatus,
   ) => {
     e.preventDefault();
-    handleStatusChange(value); // Pass the TodoStatus enum value
+    handleStatusChange(value);
   };
 
   const isCompleted = todos.some(todo => todo.completed);
 
   const clearCompletedTodos = () => {
     todos
-      .filter(todo => todo.completed) // Only completed todos
-      .forEach(todo => deleteThisTodo(todo.id)); // Delete each completed todo
+      .filter(todo => todo.completed)
+      .forEach(todo => deleteThisTodo(todo.id));
   };
 
   return (
@@ -42,32 +43,19 @@ export const TodoFilter: React.FC<Props> = ({
       </span>
 
       <nav className="filter" data-cy="Filter">
-        <a
-          href="#/"
-          className={`filter__link ${status === TodoStatus.All ? 'selected' : ''}`}
-          data-cy="FilterLinkAll"
-          onClick={e => handleClick(e, TodoStatus.All)}
-        >
-          All
-        </a>
-
-        <a
-          href="#/active"
-          className={`filter__link ${status === TodoStatus.Active ? 'selected' : ''}`}
-          data-cy="FilterLinkActive"
-          onClick={e => handleClick(e, TodoStatus.Active)}
-        >
-          Active
-        </a>
-
-        <a
-          href="#/completed"
-          className={`filter__link ${status === TodoStatus.Completed ? 'selected' : ''}`}
-          data-cy="FilterLinkCompleted"
-          onClick={e => handleClick(e, TodoStatus.Completed)}
-        >
-          Completed
-        </a>
+        {Object.values(TodoStatus).map(statusOption => (
+          <a
+            key={statusOption}
+            //href={`#/${statusOption.toLowerCase()}`}
+            className={classNames('filter__link', {
+              selected: status === statusOption,
+            })}
+            data-cy={`FilterLink${statusOption}`}
+            onClick={e => handleClick(e, statusOption)}
+          >
+            {statusOption}
+          </a>
+        ))}
       </nav>
 
       <button

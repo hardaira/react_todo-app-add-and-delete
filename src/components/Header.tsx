@@ -2,11 +2,11 @@ import React from 'react';
 import { Todo } from '../types/Todo';
 
 type Props = {
-  todos: Todo[]; // Array of Todo objects
-  handleTickPressed: () => void; // Function to handle the "tick all" button
-  query: string; // The current query string for the new todo
-  handleQueryChange: (event: React.ChangeEvent<HTMLInputElement>) => void; // Function to handle changes in the query input
-  inputRef: React.RefObject<HTMLInputElement>; // Reference to the input field
+  todos: Todo[];
+  handleTickPressed: () => void;
+  query: string;
+  handleQueryChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  inputRef: React.RefObject<HTMLInputElement>;
   addTodo: (event: React.FormEvent) => void;
 };
 
