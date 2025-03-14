@@ -27,11 +27,9 @@ export const App: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEdited, setIsEdited] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
-  const [tickPressed, setTickPressed] = useState(false);
-  const [notCompletedTodosLength, setNotCompletedTodosLength] =
-    useState<number>(0);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<TodoStatus>(TodoStatus.All);
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
@@ -40,19 +38,15 @@ export const App: React.FC = () => {
   };
 
   const handleTickPressed = () => {
-    const allCompleted = !tickPressed;
-
-    const previousTodos = [...todos];
-    const previousTickPressed = tickPressed;
+    const allCompleted = todos.every(todo => todo.completed); 
 
     const updatedTodos = todos.map(todo => ({
       ...todo,
-      completed: allCompleted,
+      completed: !allCompleted, 
       isSubmitting: true,
     }));
 
     setTodos(updatedTodos);
-    setTickPressed(allCompleted);
 
     const updatePromises = updatedTodos.map(updatedTodo =>
       updateTodo(updatedTodo).catch(() => {
@@ -61,8 +55,7 @@ export const App: React.FC = () => {
           setErrorMessage('');
         }, 3000);
 
-        setTodos(previousTodos);
-        setTickPressed(previousTickPressed);
+        setTodos(todos);
 
         throw new Error('Unable to update todos');
       }),
@@ -78,6 +71,7 @@ export const App: React.FC = () => {
       );
     });
   };
+
 
   const handleCheckedChange = (todoId: number) => {
     const todo = todos.find(t => t.id === todoId);
@@ -284,13 +278,9 @@ export const App: React.FC = () => {
       });
   }, []);
 
-  useEffect(() => {
-    const notCompletedTodos = todos.filter(
+const notCompletedTodos = todos.filter(
       todo => !todo.completed && !todo.isSubmitting,
-    );
-
-    setNotCompletedTodosLength(notCompletedTodos.length);
-  }, [todos, isSubmitting]);
+    ).length;
 
   useEffect(() => {
     if (inputRef.current && !isSubmitting) {
@@ -342,7 +332,8 @@ export const App: React.FC = () => {
               handleStatusChange={handleStatusChange}
               status={status}
               deleteThisTodo={deleteThisTodo}
-              notCompletedTodosLength={notCompletedTodosLength}
+              notCompletedTodos={notCompletedTodos}
+              
             />
           </div>
         )}
